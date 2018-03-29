@@ -183,7 +183,10 @@ module.exports = {
             },
             handlePreview(type){
                 this.dialogVisible = !1;
-                let frame = window.open('about:blank','_blank');
+                let preview = ['pdf','image'].includes(type),frame;
+                if(preview){
+                    frame = window.open('about:blank','_blank');
+                }
                 let xml = this.saveXML();
                 fetch('http://103.27.4.146:3001/api/saveXML', {
                     method: 'POST',
@@ -202,9 +205,11 @@ module.exports = {
                             this.sendPrint(resolve,'1', [{
                                 templateURL:json.data.file+'?'+Math.random().toString(32).slice(-8),
                                 data:{}
-                            }],['pdf','image'].includes(type),type);
+                            }],preview,type);
                         }).then(url=>{
-                            frame.location = url;
+                            if(preview){
+                                frame.location = url;
+                            }
                         })
                     });
                 })
