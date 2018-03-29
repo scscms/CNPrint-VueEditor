@@ -182,6 +182,8 @@ module.exports = {
                 this.menuStyle.visibility = 'hidden';
             },
             handlePreview(type){
+                this.dialogVisible = !1;
+                let frame = window.open('about:blank','_blank');
                 let xml = this.saveXML();
                 fetch('http://103.27.4.146:3001/api/saveXML', {
                     method: 'POST',
@@ -193,13 +195,17 @@ module.exports = {
                     return res.text()
                 }).then((res)=>{
                     let json = JSON.parse(res);
-                    new Promise((resolve)=>{
+                    new Promise(resolve=>{
                         this.setPrinterConfig(resolve, this.printerConfig);
                     }).then(()=>{
-                        this.sendPrint(null,'', [{
-                            templateURL:json.data.file+'?'+Math.random().toString(32).slice(-8),
-                            data:{}
-                        }],['pdf','image'].includes(type),type);
+                        new Promise(resolve=>{
+                            this.sendPrint(resolve,'1', [{
+                                templateURL:json.data.file+'?'+Math.random().toString(32).slice(-8),
+                                data:{}
+                            }],['pdf','image'].includes(type),type);
+                        }).then(url=>{
+                            frame.location = url;
+                        })
                     });
                 })
             },
@@ -663,10 +669,8 @@ module.exports = {
                             case 'print':
                                 //打印
                                 if (response.previewURL||response.previewImage) {
-                                    let a = document.createElement('a');
-                                    a.href = response.previewURL?response.previewURL:response.previewImage[0];
-                                    a.target = "_blank";
-                                    a.click();
+                                    let f = this.resolveList.print;
+                                    f && f(response.previewURL?response.previewURL:response.previewImage[0])
                                 } else {
                                     console.log("打印成功:", response);
                                 }
@@ -744,7 +748,7 @@ module.exports = {
             //请求打印
             sendPrint(resolve,orderId, contents, preview = true,type = 'pdf') {
                 if(resolve){
-                    this.resolveList['print'+orderId] = resolve;
+                    this.resolveList.print = resolve;
                 }
                 let request = this.getDefaultRequest('print', this.getUUID());
                 request.task = {
