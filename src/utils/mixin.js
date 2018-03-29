@@ -284,7 +284,7 @@ module.exports = {
                 return string;
             },
             handleXML(){
-                this.$prompt('请输入XML模板(留空使用默认模板)', '提示', {
+                this.$prompt('请输入XML模板(可选)', '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消'
                 }).then(({ value }) => {

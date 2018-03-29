@@ -12,12 +12,12 @@
                         <el-dropdown-item command="v-text"><i class="fa fa-align-left fa-rotate-90"></i>竖排</el-dropdown-item>
                     </el-dropdown-menu>
                 </el-dropdown>
-                <div class="editor_button" @click="handleDropDown('image')"><i class="fa fa-picture-o"></i>图片</div>
+                <div class="editor_button" @click="handleDropDown('image')"><i class="fa fa-image"></i>图片</div>
                 <el-dropdown @command="handleDropDown">
                     <div class="editor_button"><i class="fa fa-star"></i>形状</div>
                     <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item command="h-line"><i class="fa fa-arrows-h"></i>横线</el-dropdown-item>
-                        <el-dropdown-item command="v-line"><i class="fa fa-arrows-v"></i> &nbsp;竖线</el-dropdown-item>
+                        <el-dropdown-item command="h-line"><i class="fa fa-arrows-alt-h "></i>横线</el-dropdown-item>
+                        <el-dropdown-item command="v-line"><i class="fa fa-arrows-alt-v"></i> &nbsp;竖线</el-dropdown-item>
                         <el-dropdown-item command="rect"><i class="fa fa-square"></i>矩形</el-dropdown-item>
                     </el-dropdown-menu>
                 </el-dropdown>
