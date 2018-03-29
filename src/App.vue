@@ -25,7 +25,7 @@
                 <div class="editor_button" @click="handleDropDown('barcode')"><i class="fa fa-barcode"></i>条形码</div>
             </div>
             <div class="editor_content">
-                <div class="editor_area" @click="activateLayout">
+                <div class="editor_area" @click="activateLayout" @contextmenu.prevent="handleRightMenu">
                     <div class="editor_bg" :style="pageStyle">
                         <div class="page_offset_h" :style="offset_h"></div>
                         <div class="page_offset_v" :style="offset_v"></div>
@@ -427,6 +427,15 @@
         data(){
             return {
                 dialogVisible:false,
+            }
+        },
+        mounted(){
+            if(!navigator.userAgent.includes("Chrome") || !window.chrome){
+                this.$notify.error({
+                    title: '系统提醒',
+                    duration: 0,
+                    message: '请使用Chrome浏览器测试！'
+                });
             }
         },
         components:{

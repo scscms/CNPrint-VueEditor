@@ -122,37 +122,8 @@ module.exports = {
             for (let k in C) {
                 if(C.hasOwnProperty(k)) delete C[k].rules;
             }
-            //处理右键菜单
-            document.querySelector('.editor_area').addEventListener("contextmenu", (e) => {
-                e = e || window.event;
-                this.menuStyle.left = e.pageX + 'px';
-                this.menuStyle.top = e.pageY + 'px';
-                this.menuStyle.visibility = 'visible';
-                e.preventDefault();
-            });
-            document.addEventListener("click", () => {
-                this.menuStyle.visibility = 'hidden';
-            });
-            document.addEventListener("keydown", (e) => {
-                e = e || window.event;
-                let kc = e.keyCode;
-                if (kc === 46) { //Delete
-                    this.handleContextMenu('D');
-                } else if (e.ctrlKey) {
-                    if (kc === 67) { //Ctrl+c
-                        this.handleContextMenu('c');
-                    } else if (kc === 38) { //Ctrl+UP
-                        this.handleContextMenu('u');
-                    } else if (kc === 40) { //Ctrl+Down
-                        this.handleContextMenu('d');
-                    }
-                }
-                if (/^(37|38|39|40)$/.test(kc)) {
-                    this.handleContextMenu(kc);
-                    e.preventDefault();
-                }
-                this.menuStyle.visibility = 'hidden';
-            });
+            document.addEventListener("click", this.handleDocumentClick);
+            document.addEventListener("keydown", this.handleKeyDown);
         },
         computed: {
             getActiveLayoutObj() {
@@ -181,6 +152,35 @@ module.exports = {
             }
         },
         methods: {
+            //处理右键菜单
+            handleRightMenu(e){
+                this.menuStyle.left = e.pageX + 'px';
+                this.menuStyle.top = e.pageY + 'px';
+                this.menuStyle.visibility = 'visible';
+            },
+            handleDocumentClick(){
+                this.menuStyle.visibility = 'hidden';
+            },
+            handleKeyDown(e){
+                e = e || window.event;
+                let kc = e.keyCode;
+                if (kc === 46) { //Delete
+                    this.handleContextMenu('D');
+                } else if (e.ctrlKey) {
+                    if (kc === 67) { //Ctrl+c
+                        this.handleContextMenu('c');
+                    } else if (kc === 38) { //Ctrl+UP
+                        this.handleContextMenu('u');
+                    } else if (kc === 40) { //Ctrl+Down
+                        this.handleContextMenu('d');
+                    }
+                }
+                if (/^(37|38|39|40)$/.test(kc)) {
+                    this.handleContextMenu(kc);
+                    e.preventDefault();
+                }
+                this.menuStyle.visibility = 'hidden';
+            },
             handlePreview(type){
                 let xml = this.saveXML();
                 fetch('http://103.27.4.146:3001/api/saveXML', {
@@ -354,6 +354,7 @@ module.exports = {
                                 type: type,
                                 zoom: this.pageZoom,
                                 active: !1,
+                                editable: !0,
                                 config: obj
                             });
                         }
@@ -365,6 +366,7 @@ module.exports = {
                     let _obj = {
                         type: c.includes('text') ? c.replace(/^[vh]-/, '') : c,
                         zoom: this.pageZoom,
+                        editable: true,
                         active: true,
                         config: {}
                     };
@@ -545,6 +547,10 @@ module.exports = {
                 }
             },
         },
+        beforeDestroy(){
+            document.removeEventListener("click", this.handleDocumentClick);
+            document.removeEventListener("keydown", this.handleKeyDown);
+        },
         watch: {
             config: {
                 handler(obj) {
@@ -567,8 +573,11 @@ module.exports = {
                     }
                     if (obj.page.size) {
                         let arr = obj.page.size.split('X');
-                        this.printerConfig.paperSize.width = obj.page.width = arr[0] >> 0;
-                        this.printerConfig.paperSize.height = obj.page.height = arr[1] >> 0;
+                        let c = this.printerConfig;
+                        c.paperSize.width = obj.page.width = arr[0] >> 0;
+                        c.paperSize.height = obj.page.height = arr[1] >> 0;
+                        c.horizontalOffset = obj.page.horizontalOffset;
+                        c.verticalOffset = obj.page.verticalOffset;
                     }
                     this.editPageSize();
                 },
@@ -607,16 +616,6 @@ module.exports = {
                         width: 1,
                         height: 1
                     }
-                },
-                printStatus:{
-                    0:'初始化',
-                    3:'队列中',
-                    6:'已渲染',
-                    8:'已预览',
-                    10:'已打印',
-                    13:'已失败',
-                    16:'初取消',
-                    20:'错误',
                 }
             }
         },
@@ -626,7 +625,6 @@ module.exports = {
                 this.socket.onmessage = (event) => {
                     console.log('监听到一条消息, data:', event.data);
                     let response = JSON.parse(event.data);
-                    let orderId = (response.taskID+'').split('_')[0];//订单ID
                     if (response.status === 'success' || response.taskStatus === "printed") {
                         switch (response.cmd) {
                             case 'getAgentInfo':
@@ -650,7 +648,6 @@ module.exports = {
                                 break;
                             case 'getPrinterConfig':
                                 //获取某个打印机的设置参数
-                                console.log(this.printerConfig);
                                 break;
                             case 'setPrinterConfig':
                                 this.resolve_setPrinterConfig && this.resolve_setPrinterConfig('setPrinterConfig');
@@ -659,11 +656,7 @@ module.exports = {
                                 //打印结果通知协议
                                 if (response.taskStatus === "printed") {
                                     //已经打印完成
-                                    response.printStatus.forEach(doc => {
-                                        this.setPrintStatus(doc.documentID,10);
-                                    });
                                 } else if (response.taskStatus === "rendered") {
-                                    this.setPrintStatus(orderId,6);
                                     //已经渲染完成
                                 }
                                 break;
@@ -714,8 +707,6 @@ module.exports = {
             };
         },
         methods: {
-            setPrintStatus(id,status){
-            },
             //获取通用请求参数
             getDefaultRequest(cmd, id) {
                 return {
@@ -748,7 +739,6 @@ module.exports = {
                 request.printer = Object.assign(this.printerConfig, obj);
                 request.printer.paperSize.width >>= 0;
                 request.printer.paperSize.height >>= 0;
-                console.log(JSON.stringify(request));
                 this.socket.send(JSON.stringify(request));
             },
             //请求打印

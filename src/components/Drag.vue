@@ -18,11 +18,7 @@
         props: {
             config: {
                 type: Object,
-                required: true,
-                validator(obj){
-                    obj.editable = obj.editable !== false;
-                    return true;
-                }
+                required: true
             }
         },
         data() {
