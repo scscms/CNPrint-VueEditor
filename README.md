@@ -4,7 +4,7 @@
     云打印是由菜鸟出品的客户端，是以独立进程和打印机交互（非作为浏览器插件进行打印）。
     浏览器或其他客户端需要通过WebSocket协议与云打印客户端进行通信，支持javascript，java，c/c++，python等常用的语言。
     若ISV的ERP系统是B/S结构，需要使用以下版本的浏览器来更好的支持WebSocket:
-    chrome 45及以上（建议使用chrome的最新版本）
+    支持chrome 45及以上、Firefox（建议使用chrome的最新版本）
     
 - 淘宝本身提供有云打印[在线编辑器](https://cloudprint.cainiao.com/?spm=a219a.7629140.0.0.uzRAm6)，但是需要登录，不能定制，更无法集到我们的系统。
 

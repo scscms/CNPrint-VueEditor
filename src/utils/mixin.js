@@ -203,7 +203,7 @@ module.exports = {
                     }).then(()=>{
                         new Promise(resolve=>{
                             this.sendPrint(resolve,'1', [{
-                                templateURL:json.data.file+'?'+Math.random().toString(32).slice(-8),
+                                templateURL:json.data.file,
                                 data:{}
                             }],preview,type);
                         }).then(url=>{

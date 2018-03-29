@@ -429,15 +429,6 @@
                 dialogVisible:false,
             }
         },
-        mounted(){
-            if(!navigator.userAgent.includes("Chrome") || !window.chrome){
-                this.$notify.error({
-                    title: '系统提醒',
-                    duration: 0,
-                    message: '请使用Chrome浏览器测试！'
-                });
-            }
-        },
         components:{
             Drag
         }
