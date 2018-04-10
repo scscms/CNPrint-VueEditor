@@ -457,7 +457,7 @@ module.exports = {
             },
             //点击右键菜单
             clickContextMenu(e) {
-                this.handleContextMenu(e.target.innerText.replace(/(?:.+\+)?(\w).+/, '$1'));
+                this.handleContextMenu(e.target.innerHTML.replace(/(?:.+\+)?(\w).+/, '$1'));
             },
             //处理右键菜单点击
             handleContextMenu(type) {
