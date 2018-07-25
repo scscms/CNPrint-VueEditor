@@ -524,6 +524,8 @@
             }
             .editor_area {
                 flex: 1;
+                display: flex;
+                /*align-items: center;*/
                 overflow: scroll;
                 text-align: center;
                 height: ~'calc(100vh - 60px)';
