@@ -31,7 +31,7 @@
 }
 .editor .editor_content .context_menu li span{float:right
 }
-.editor .editor_content .editor_area{-ms-flex:1;flex:1;overflow:scroll;text-align:center;height:calc(100vh - 60px)
+.editor .editor_content .editor_area{-ms-flex:1;flex:1;display:-ms-flexbox;display:flex;overflow:scroll;text-align:center;height:calc(100vh - 60px)
 }
 .editor .editor_content .editor_area .editor_bg{position:relative;text-align:left;background-color:#fff;width:300px;height:400px;margin:20px auto;background-size:cover
 }
