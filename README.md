@@ -17,7 +17,7 @@
 - [云打印交互协议](https://open.taobao.com/docs/doc.htm?spm=a219a.7629140.0.0.r2M9Vg&treeId=409&articleId=107014&docType=1) 网页调用打印的API说明。
 
 ### 在线预览
-![image](static/readme.png)
+![image](readme.png)
 
 [点击查看在线DEMO](http://103.27.4.146:3001/editor/index.html)
 
@@ -25,4 +25,5 @@
 本编辑器是因OMS项目需求而制，其中还有购物清单打印（着重处理表格问题）、菜鸟电子面单打印（双重模板合并）、快递模板打印都是在此基础上建立。如果有机会其实可以使用SVG来构建此编辑器，对画斜线更直观。
 
 ### 记录
-1.2018-04-10 修复兼容性问题innerHTML取代innerText；使用babel-preset-env替换babel-preset-es2015;
+- 2018-04-10 修复兼容性问题innerHTML取代innerText；使用babel-preset-env替换babel-preset-es2015;
+- 2018-10-08 基于Vue CLI 3重构

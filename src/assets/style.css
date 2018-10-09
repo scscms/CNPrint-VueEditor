@@ -43,7 +43,7 @@ html, body, #app {
     height:56px;
     width: 112px;
     content: "";
-    background: url('../static/logo.png') no-repeat center;
+    background: url('./logo.png') no-repeat center;
 }
 .scs-logo::before {
     z-index: 3;

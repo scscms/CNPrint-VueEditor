@@ -418,21 +418,22 @@
 </template>
 
 <script>
-    //功能：菜鸟打印模板编辑器
-    import Drag from 'components/Drag.vue';
-    import common from 'utils/mixin';
-    export default {
-        name: 'Editor',
-        mixins: [common.Editor,common.Printer],
-        data(){
-            return {
-                dialogVisible:false,
-            }
-        },
-        components:{
-            Drag
-        }
-    }
+// 功能：菜鸟打印模板编辑器
+import Drag from './components/Drag.vue';
+import common from './utils/mixin';
+
+export default {
+  name: 'Editor',
+  mixins: [common.Editor, common.Printer],
+  data() {
+    return {
+      dialogVisible: false,
+    };
+  },
+  components: {
+    Drag,
+  },
+};
 </script>
 
 <style lang="less">
@@ -465,7 +466,7 @@
                 display: inline-block;
                 width:240px;
                 height:40px;
-                background: url('../static/scs_logo.png') no-repeat left center;
+                background: url('./assets/scs_logo.png') no-repeat left center;
             }
             & + button {
                 float: right;
@@ -525,7 +526,6 @@
             .editor_area {
                 flex: 1;
                 display: flex;
-                /*align-items: center;*/
                 overflow: scroll;
                 text-align: center;
                 height: ~'calc(100vh - 60px)';
