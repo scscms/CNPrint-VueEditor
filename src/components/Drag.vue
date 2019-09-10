@@ -1,12 +1,12 @@
 <template>
-    <div class="drag_div" draggable="false" :style="divStyle" @click.stop="handleClick">
-        <div class="drag_div_in" draggable="false" :style="inStyle" @mousedown.stop="mouseDown">
-            <template v-if="config.type==='text'">{{getText}}</template>
-            <canvas ref="can" v-if="config.type==='qrcode'"></canvas>
-            <p v-if="config.type==='barcode'&&!config.config.hideText" :style="pStyle">{{getText}}</p>
-        </div>
-        <drag-angle v-for="item in array" v-if="isShow(item)" :key="item" @reSize="handleResize" :sign="item"></drag-angle>
+  <div class="drag_div" draggable="false" :style="divStyle" @click.stop="handleClick">
+    <div class="drag_div_in" draggable="false" :style="inStyle" @mousedown.stop="mouseDown">
+      <template v-if="config.type==='text'">{{getText}}</template>
+      <canvas ref="can" v-if="config.type==='qrcode'"></canvas>
+      <p v-if="config.type==='barcode'&&!config.config.hideText" :style="pStyle">{{getText}}</p>
     </div>
+    <drag-angle v-for="item in array" v-if="isShow(item)" :key="item" @reSize="handleResize" :sign="item"></drag-angle>
+  </div>
 </template>
 
 <script>
@@ -21,8 +21,12 @@ export default {
       type: Object,
       required: true,
     },
+    layout: {
+      type: Array,
+      required: true
+    }
   },
-  data() {
+  data () {
     return {
       rate: 3.78, // 比率
       min: 10, // 最小值
@@ -39,11 +43,11 @@ export default {
       w: 0,
     };
   },
-  mounted() {
+  mounted () {
     this.init();
   },
   computed: {
-    getText() {
+    getText () {
       const c = this.config.config;
       if (c.alias) {
         return c.value.includes('<%=') ? c.alias : c.value;
@@ -52,7 +56,7 @@ export default {
     },
   },
   methods: {
-    isShow(s) {
+    isShow (s) {
       // ['n','s','w','e','ne','nw','se','sw']
       if (!this.config.editable || !this.config.active) return false;
       const t = this.config.type;
@@ -64,16 +68,16 @@ export default {
       return !t.includes('-line');
     },
     // mm转px
-    getExchange(x, suf) {
+    getExchange (x, suf) {
       return this.getZoom(x * this.rate) + (suf || 0);
     },
-    getZoom(v) {
+    getZoom (v) {
       return v * this.config.zoom;// 转放大倍数后的值
     },
-    divideZoom(v) {
+    divideZoom (v) {
       return (v / this.config.zoom).toFixed(2);
     },
-    init() {
+    init () {
       const obj = this.config;
       const c = obj.config;
       const e = this.getExchange;
@@ -95,7 +99,7 @@ export default {
       }
     },
     // 点击激活当前layout
-    handleClick() {
+    handleClick () {
       if (this.config.editable) {
         this.dragging = true;
         this.$emit('activate', this.config);
@@ -103,14 +107,14 @@ export default {
         this.$emit('activate', null);
       }
     },
-    handleResize(obj) {
+    handleResize (obj) {
       if (obj === 'mouseUp') {
         this.dragging = false;
         return this.init();
       }
       this.dragging = true;
-      const {sign} = obj;
-      const {type} = this.config;
+      const { sign } = obj;
+      const { type } = this.config;
       const conf = this.config.config;
       const dz = this.divideZoom;
       let x;
@@ -194,13 +198,15 @@ export default {
       }
       this.$emit('update', c);
     },
-    mouseUp() {
+    mouseUp () {
       this.init();
       this.dragging = false;
+      // 释放鼠标时去除对齐线
+      this.$emit('showStanderLine', [])
       document.removeEventListener('mousemove', this.drag);
       document.removeEventListener('mouseup', this.mouseUp);
     },
-    mouseDown(event) {
+    mouseDown (event) {
       this.handleClick();// 激活
       const e = event || window.event;
       this.startPageX = e.pageX;
@@ -208,8 +214,9 @@ export default {
       document.addEventListener('mousemove', this.drag);
       document.addEventListener('mouseup', this.mouseUp);
     },
-    drag(event) {
+    drag (event) {
       if (this.config.editable && this.dragging) {
+        this.getStanderLine()
         const e = event || window.event;
         const x = this.x + e.pageX - this.startPageX;
         const y = this.y + e.pageY - this.startPageY;
@@ -231,10 +238,93 @@ export default {
         }
       }
     },
+    getStanderLine () {
+      // 获取当前移动的layout的基本信息：上下左右位置
+      // TODO :这里数据精度较小，对数据四射五入取整，可优化
+      let rightLayout = Object.assign({}, this.config.config)
+      rightLayout.top = Math.round(rightLayout.top)
+      rightLayout.left = Math.round(rightLayout.left)
+      rightLayout.bottom = Math.round(rightLayout.top + rightLayout.height)
+      rightLayout.right = Math.round(rightLayout.left + rightLayout.width)
+      // 存放其他layout的列表
+      let standerLayout = this.layout.filter(item => rightLayout.id !== item.config.id)
+      // 获取其他layout的基本信息 ：上下左右位置  
+      let standerLayoutInfo = []
+      standerLayout.forEach(item => standerLayoutInfo.push({
+        left: Math.round(item.config.left),
+        right: Math.round(item.config.left + item.config.width),
+        top: Math.round(item.config.top),
+        bottom: Math.round(item.config.top + item.config.height)
+      }))
+      this.standerList = [] // 用来存放对齐线的数组，最后反馈给父组件
+
+      // 与其他layout循环比对位置是否相同，共8种情况（左左对齐，左右对齐，上上对齐，上下对齐，右右对齐，右左对齐，下下对齐，下上对齐）
+      standerLayoutInfo.forEach(item => {
+        let standerItem
+        // 这里举例上上对齐 对齐线应该是一条从左往右的的直线，长度为两个left相减
+        if (rightLayout.top === item.top || rightLayout.bottom === item.top) {
+          standerItem = {
+            top: item.top,
+            width: Math.abs(item.left - rightLayout.left),
+            left: Math.min(item.left, rightLayout.left),
+          }
+          for (let i in standerItem) {
+            standerItem[i] = `${this.getExchange(standerItem[i])}px`
+          }
+          standerItem['border-top'] = '1px dotted'
+          this.standerList.push(standerItem)
+        }
+        if (rightLayout.left === item.left || item.left === rightLayout.right) {
+          standerItem = {
+            top: Math.min(item.top, rightLayout.top),
+            left: item.left,
+            height: Math.abs(item.top - rightLayout.top),
+          }
+          for (let i in standerItem) {
+            standerItem[i] = `${this.getExchange(standerItem[i])}px`
+          }
+          standerItem['border-left'] = '1px dotted'
+          this.standerList.push(standerItem)
+        }
+        if (rightLayout.bottom === item.bottom || rightLayout.top === item.bottom) {
+          standerItem = {
+            top: item.bottom,
+            width: Math.abs(item.left - rightLayout.left),
+            left: Math.min(item.left, rightLayout.left),
+          }
+          for (let i in standerItem) {
+            standerItem[i] = `${this.getExchange(standerItem[i])}px`
+          }
+          standerItem['border-top'] = '1px dotted'
+
+          this.standerList.push(standerItem)
+        }
+        if (rightLayout.right === item.right || item.right === rightLayout.left) {
+          standerItem = {
+            top: Math.min(item.top, rightLayout.top),
+            // width: 1,
+            left: item.right,
+            height: Math.abs(item.top - rightLayout.top)
+          }
+          for (let i in standerItem) {
+            standerItem[i] = `${this.getExchange(standerItem[i])}px`
+          }
+          standerItem['border-left'] = '1px dotted'
+          this.standerList.push(standerItem)
+        }
+      })
+      // 8种情况轮询后反馈给父组件展示对齐线
+      if (this.standerList.length > 0) {
+        this.$emit('showStanderLine', this.standerList)
+        this.standerList = []
+      } else {
+        this.$emit('showStanderLine', [])
+      }
+    }
   },
   watch: {
     config: {
-      handler(obj) {
+      handler (obj) {
         !this.dragging && this.init();
         let inDiv = {};
         const c = obj.config;
@@ -340,32 +430,32 @@ export default {
 };
 </script>
 <style lang='less'>
-    .drag_div {
-        position: absolute;
-        box-sizing: border-box;
-        left: 0;
-        top: 0;
-        user-select: none;
-        z-index: 1;
-        .drag_div_in {
-            cursor: move;
-            width: 100%;
-            height: 100%;
-            overflow:hidden;
-            background-repeat : no-repeat;
-            background-size : 100% 100%;
-            canvas{
-                width:100%;
-                height:100%
-            }
-            p{
-                background-color: #fff;
-                text-align: center;
-                position: absolute;
-                bottom: 0;
-                font-size:14px;
-                width: 100%;
-            }
-        }
+.drag_div {
+  position: absolute;
+  box-sizing: border-box;
+  left: 0;
+  top: 0;
+  user-select: none;
+  z-index: 1;
+  .drag_div_in {
+    cursor: move;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    canvas {
+      width: 100%;
+      height: 100%;
     }
+    p {
+      background-color: #fff;
+      text-align: center;
+      position: absolute;
+      bottom: 0;
+      font-size: 14px;
+      width: 100%;
+    }
+  }
+}
 </style>
