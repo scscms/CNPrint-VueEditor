@@ -29,7 +29,10 @@
                     <div class="editor_bg" :style="pageStyle">
                         <div class="page_offset_h" :style="offset_h"></div>
                         <div class="page_offset_v" :style="offset_v"></div>
-                        <drag v-for="(obj,index) in layout" :key="obj.type+index" :config="obj" @update="dragUpdate" @activate="activateLayout"></drag>
+                         <ul v-if="standerLineList.length>0">
+                              <li v-for="(items,index) in standerLineList" :key="index" :style="items" class="stander_line"></li>
+                         </ul>
+                        <drag v-for="(obj,index) in layout" :key="obj.type+index" :config="obj" @update="dragUpdate" @activate="activateLayout" :layout="layout" @showStanderLine="showStanderLine"></drag>
                     </div>
                     <div class="context_menu" :style="menuStyle" @click="clickContextMenu">
                         <ul>
@@ -556,6 +559,10 @@ export default {
                     .page_offset_v {
                         border-width: 1px 0;
                         width: 100%
+                    }
+                    .stander_line{
+                      position:absolute;
+                      border-color:black;
                     }
                 }
             }
