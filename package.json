@@ -3,6 +3,7 @@
   "version": "2.0.0",
   "author": "scscms<guangda1234@126.com>",
   "description": "菜鸟云打印Vue编辑器",
+  "license": "MIT",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
