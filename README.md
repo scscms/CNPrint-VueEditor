@@ -19,7 +19,7 @@
 ### 在线预览
 ![image](readme.png)
 
-<a href="http://103.27.4.146:3001/editor/index.html" target="_blank">点击查看在线DEMO</a>
+<a href="http://103.236.255.179:3001/editor/index.html" target="_blank">点击查看在线DEMO</a>
 
 ### 后记
 本编辑器是因OMS项目需求而制，其中还有购物清单打印（着重处理表格问题）、菜鸟电子面单打印（双重模板合并）、快递模板打印都是在此基础上建立。如果有机会其实可以使用SVG来构建此编辑器，对画斜线更直观。
